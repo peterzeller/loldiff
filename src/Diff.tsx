@@ -36,7 +36,6 @@ def factorial(n):
 `;
 
   return (
-    <div style={{ height: "90vh" }}>
       <DiffEditor
         height="100%"
         original={originalCode}
@@ -47,7 +46,6 @@ def factorial(n):
           renderSideBySide: true, // Set to false for inline diff view
         }}
       />
-    </div>
   );
 };
 
