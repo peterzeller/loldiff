@@ -144,7 +144,6 @@ button {
   background-color: #aaf;
   width: 250px;
   height: 100vh;
-  transition: width 0.3s;
   overflow: hidden;
 }
 

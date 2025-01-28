@@ -1,18 +1,34 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 import MonacoDiffEditor from "./Diff";
 
+interface InvokeResult<T> {
+  response: T | null;
+  error: Error | null;
+  is_loading: boolean
+}
+
+function useInvoke<T>(cmd: string, args?: any, options?: any): InvokeResult<T> {
+  const [response, setResponse] = useState<T | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [is_loading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    invoke<T>(cmd, args, options)
+      .then(setResponse)
+      .catch(setError)
+      .finally(() => setIsLoading(false));
+  }, [cmd, args, options]);
+
+  return { response, error, is_loading };
+}
+
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(250);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const file_tree = useInvoke("get_file_tree", { });
 
-  async function greet() {
-    setGreetMsg(await invoke("greet", { name }));
-  }
 
   const handleMouseDown = (e: React.MouseEvent) => {
     document.addEventListener("mousemove", handleMouseMove);
@@ -39,7 +55,7 @@ function App() {
         ref={sidebarRef}
       >
         {/* Add your file tree component here */}
-        <div>File Tree View!!</div>
+        <div>{ file_tree.is_loading ? "loading" : file_tree.error ? JSON.stringify(file_tree.error) : JSON.stringify(file_tree.response)}</div>
       </div>
       <div className="resizer" onMouseDown={handleMouseDown} />
       <div className="content">
