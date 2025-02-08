@@ -141,7 +141,7 @@ button {
 .sidebar {
   display: flex;
   flex-direction: column;
-  background-color: #aaf;
+  background-color: #fff;
   width: 250px;
   height: 100vh;
   overflow: hidden;
@@ -158,7 +158,7 @@ button {
   flex: 1;
   flex-grow: 1;
   align-items: flex-start;
-  background: #afa;
+  background: #fff;
 }
 
 .resizer {
@@ -166,6 +166,16 @@ button {
   flex-direction: column;
   width: 5px;
   height: 100%;
-  background: #000;
+  background: #aaa;
   cursor: ew-resize;
+}
+
+
+
+ul.file-tree {
+  list-style: none;
+  padding: 0;
+  padding-left: 10px;
+  margin: 0;
+  text-align: left;
 }

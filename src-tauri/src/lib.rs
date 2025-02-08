@@ -10,16 +10,26 @@ fn greet(name: &str) -> String {
 fn get_file_tree() -> FileTree {
     FileTree {
         name: "root".to_string(),
+        is_file: false,
         children: vec![
             FileTree {
                 name: "child1".to_string(),
+                is_file: false,
                 children: vec![],
             },
             FileTree {
                 name: "child2".to_string(),
+                is_file: false,
                 children: vec![FileTree {
                     name: "child3".to_string(),
-                    children: vec![],
+                    is_file: false,
+                    children: vec![
+                        FileTree {
+                            name: "child4".to_string(),
+                            is_file: true,
+                            children: vec![],
+                        },
+                    ],
                 }],
             },
         ],
@@ -29,6 +39,7 @@ fn get_file_tree() -> FileTree {
 #[derive(Serialize)]
 struct FileTree {
     name: String,
+    is_file: bool,
     children: Vec<FileTree>,
 }
 

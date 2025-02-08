@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 import MonacoDiffEditor from "./Diff";
+import { FileTreeView } from "./FileTreeView";
 
 interface InvokeResult<T> {
   response: T | null;
@@ -55,7 +56,7 @@ function App() {
         ref={sidebarRef}
       >
         {/* Add your file tree component here */}
-        <div>{ file_tree.is_loading ? "loading" : file_tree.error ? JSON.stringify(file_tree.error) : JSON.stringify(file_tree.response)}</div>
+        <div>{ file_tree.is_loading ? "loading" : file_tree.error ? JSON.stringify(file_tree.error) : <FileTreeView fileTree={file_tree.response as any}></FileTreeView>}</div>
       </div>
       <div className="resizer" onMouseDown={handleMouseDown} />
       <div className="content">
