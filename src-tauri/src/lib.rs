@@ -1,4 +1,4 @@
-use std::{fs::File, io::{BufReader, Read}, path::Path};
+use std::{env, fs::File, io::{BufReader, Read}, path::Path};
 
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -10,27 +10,41 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn get_file_tree() -> FileTree {
-    let folder_1 = std::path::Path::new("/home/peter/work/loldiff/examples/diff1/a");
-    let folder_2 = std::path::Path::new("/home/peter/work/loldiff/examples/diff1/b");
-    get_file_tree_from_path(folder_1, folder_2).unwrap()
+fn get_file_tree() -> Result<FileTree , Err> {
+    // use the command line arguments to get the paths
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 3 {
+        return Err(Err::InvalidPath);
+    }
+    let folder_1 = Path::new(&args[1]);
+    let folder_2 = Path::new(&args[2]);
+    get_file_tree_from_path(folder_1, folder_2)
 }
 
-#[derive(Debug)]
+#[tauri::command]
+fn get_file_content(path: String) -> Result<String, Err> {
+    let file = File::open(path)?;
+    let mut reader = BufReader::new(file);
+    let mut content = String::new();
+    reader.read_to_string(&mut content)?;
+    Ok(content)
+}
+
+#[derive(Debug, Serialize)]
 enum Err {
-    Io(std::io::Error),
+    Io(String),
     InvalidPath,
 }
 
 impl From<std::io::Error> for Err {
     fn from(e: std::io::Error) -> Self {
-        Err::Io(e)
+        Err::Io(e.to_string())
     }
 }
 
 fn get_file_tree_from_path(left_path: &Path, right_path: &Path) -> Result<FileTree,Err> {
     let name = left_path.file_name().ok_or(Err::InvalidPath)?.to_str().ok_or(Err::InvalidPath)?.to_string();
-    let is_file = left_path.is_file();
+    let is_file = left_path.is_file() || right_path.is_file();
     let mut children = vec![];
     let left_hash = if left_path.is_file() {
         hash_file(left_path)?
@@ -43,16 +57,16 @@ fn get_file_tree_from_path(left_path: &Path, right_path: &Path) -> Result<FileTr
         [0; 32]
     };
     if left_path.is_dir() {
-        for entry in std::fs::read_dir(left_path).unwrap() {
+        for entry in std::fs::read_dir(left_path)? {
             let entry = entry?;
             let child = get_file_tree_from_path(entry.path().as_path(), right_path.join(entry.file_name()).as_path())?;
             children.push(child);
         }
     }
     if right_path.is_dir() {
-        for entry in std::fs::read_dir(right_path).unwrap() {
+        for entry in std::fs::read_dir(right_path)? {
             let entry = entry?;
-            if children.iter().any(|child| child.name == entry.file_name().to_str().unwrap()) {
+            if children.iter().any(|child| child.name == entry.file_name().to_str().unwrap_or("")) {
                 continue;
             }
             let child = get_file_tree_from_path(left_path.join(entry.file_name()).as_path(), entry.path().as_path())?;
@@ -84,8 +98,8 @@ fn get_file_tree_from_path(left_path: &Path, right_path: &Path) -> Result<FileTr
     // TODO add missing entries from right_path
     Ok(FileTree {
         name,
-        left_path: left_path.to_str().unwrap().to_string(),
-        right_path: right_path.to_str().unwrap().to_string(),
+        left_path: left_path.to_str().ok_or(Err::InvalidPath)?.to_string(),
+        right_path: right_path.to_str().ok_or(Err::InvalidPath)?.to_string(),
         status,
         left_hash,
         right_hash,
@@ -137,7 +151,7 @@ enum Status {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, get_file_tree])
+        .invoke_handler(tauri::generate_handler![greet, get_file_tree, get_file_content])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

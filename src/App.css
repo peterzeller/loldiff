@@ -195,3 +195,11 @@ ul.file-tree {
 .eq-status-RemovedRight {
   color: rgb(170, 60, 60);
 }
+
+.file-tree-entry > span {
+  cursor: pointer;
+}
+
+.file-tree-entry > span:hover {
+  background-color: #f0f0f0;
+}
