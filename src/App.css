@@ -179,3 +179,19 @@ ul.file-tree {
   margin: 0;
   text-align: left;
 }
+
+.eq-status-Different {
+  color: #000;
+}
+
+.eq-status-Same {
+  color: #aaa;
+}
+
+.eq-status-AddedRight {
+  color: rgb(47, 151, 73);
+}
+
+.eq-status-RemovedRight {
+  color: rgb(170, 60, 60);
+}
